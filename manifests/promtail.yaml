@@ -1,18 +1,35 @@
-server:
-  http_listen_port: 9080
-  grpc_listen_port: 0
+config:
+  server:
+    http_listen_port: 9080
+    grpc_listen_port: 0
 
-positions:
-  filename: /tmp/positions.yaml
+  positions:
+    filename: /tmp/positions.yaml
 
-clients:
-  - url: http://loki:3100/loki/api/v1/push  # Change `loki` if different in your cluster
+  clients:
+    - url: http://loki:3100/loki/api/v1/push
 
-scrape_configs:
-  - job_name: falco
-    static_configs:
-      - targets:
-          - localhost
-        labels:
-          job: falco
-          __path__: /var/log/falco.log
+  scrape_configs:
+    - job_name: falco
+      static_configs:
+        - targets:
+            - localhost
+          labels:
+            job: falco
+            __path__: /var/log/falco.log
+
+  # Optional but useful for better reliability
+  # limits_config:
+  #   ingestion_rate_mb: 4
+  #   ingestion_burst_size_mb: 6
+
+volumes:
+  - name: falco-log
+    hostPath:
+      path: /var/log/falco.log
+      type: File
+
+volumeMounts:
+  - name: falco-log
+    mountPath: /var/log/falco.log
+    readOnly: true

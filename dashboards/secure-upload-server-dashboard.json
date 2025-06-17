@@ -49,7 +49,7 @@
       "version": "latest"
     }
   ],
-  "title": "Secure Upload Server Dashboard",
+  "title": "Secure_Upload_Server_Dashboard",
   "time": {
     "from": "now-6h",
     "to": "now"

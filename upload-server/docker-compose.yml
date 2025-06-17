@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  secure-upload-server:
+    build: ../upload-server
+    image: secure-upload-server
+    ports:
+      - "5000:5000"
+    volumes:
+      - secure-upload-data:/uploads
+
+volumes:
+  secure-upload-data:

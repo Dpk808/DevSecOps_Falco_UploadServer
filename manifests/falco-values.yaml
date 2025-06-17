@@ -1,0 +1,7 @@
+falco:
+  jsonOutput: true
+  jsonIncludeOutputProperty: true
+
+  httpOutput:
+    enabled: true
+    url: "http://falcosidekick.monitoring.svc.cluster.local:2801/"

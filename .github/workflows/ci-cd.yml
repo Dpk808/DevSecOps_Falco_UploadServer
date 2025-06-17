@@ -1,0 +1,111 @@
+name: DevSecOps CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  devsecops:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: 🐍 Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r upload-server/requirements.txt
+
+      - name: 🔍 Bandit - Static Code Security Scan
+        continue-on-error: true
+        run: |
+          pip install bandit
+          mkdir -p scan-reports
+          bandit -r upload-server/app.py -f txt -o scan-reports/bandit-report.txt
+
+      - name: 🔒 Snyk - Python Dependency Vulnerability Scan
+        run: |
+          npm install -g snyk
+          snyk auth ${{ secrets.SNYK_TOKEN }}
+          snyk test --file=upload-server/requirements.txt --package-manager=pip --severity-threshold=medium
+
+      - name: ✅ Run Unit Tests with pytest
+        run: |
+          pip install pytest
+          pytest upload-server/test_app.py
+
+      - name: 🐳 Build Docker Image & Tag
+        run: |
+          docker build -t secure-upload-server ./upload-server
+          docker tag secure-upload-server deepakk2212/secure-upload-server:latest
+
+      - name: 🔐 Trivy - Docker Image Vulnerability Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'deepakk2212/secure-upload-server:latest'
+          format: 'table'
+          output: 'scan-reports/trivy-report.txt'
+
+      - name: 🔑 Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: 📤 Push Docker Image to DockerHub
+        run: docker push deepakk2212/secure-upload-server:latest
+
+      - name: ⚙️ Setup kind Kubernetes cluster
+        uses: engineerd/setup-kind@v0.5.0
+        with:
+          version: v0.17.0
+
+      - name: ⬆️ Load Docker image into kind cluster
+        run: kind load docker-image deepakk2212/secure-upload-server:latest
+
+      - name: 🌐 Create namespace and secret in kind cluster
+        run: |
+          kubectl create namespace secure-upload --dry-run=client -o yaml | kubectl apply -f -
+          kubectl create secret generic secure-upload-server-secret \
+            --from-literal=SECRET_KEY="${{ secrets.UPLOAD_SECRET_KEY }}" \
+            --namespace=secure-upload \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: 🚀 Deploy Kubernetes manifests
+        run: kubectl apply -f k8s/
+
+      - name: 🛡️ Install Helm
+        run: |
+          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+      - name: 🔄 Add Falco Helm repo and update
+        run: |
+          helm repo add falcosecurity https://falcosecurity.github.io/charts
+          helm repo update
+
+      - name: 📦 Create Falco namespace
+        run: kubectl create namespace falco --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: 🚨 Install Falco using Helm
+        run: |
+          helm install falco falcosecurity/falco --namespace falco --wait
+
+      - name: 🔍 Verify Falco pods are running
+        run: kubectl get pods -n falco
+
+      - name: 🗂️ Upload Security Scan Reports
+        uses: actions/upload-artifact@master
+        with:
+          name: scan-reports
+          path: scan-reports/
+
+      # - name: 🔄 Trigger ArgoCD Sync
+      #   if: success()
+      #   run: curl -X POST ${{ secrets.ARGOCD_WEBHOOK }}

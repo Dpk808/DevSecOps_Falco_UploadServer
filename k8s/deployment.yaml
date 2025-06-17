@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: secure-upload-server #Final push to Github
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: secure-upload-server
+  template:
+    metadata:
+      labels:
+        app: secure-upload-server
+    spec:
+      containers:
+        - name: secure-upload-server
+          image: deepakk2212/secure-upload-server:v4
+          ports:
+            - containerPort: 5000
+          env:
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: upload-server-secret
+                  key: SECRET_KEY
+          volumeMounts:
+            - name: upload-volume
+              mountPath: /uploads
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: upload-volume
+          persistentVolumeClaim:
+            claimName: secure-upload-pvc

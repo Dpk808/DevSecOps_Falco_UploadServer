@@ -200,16 +200,4 @@ GitHub Actions will handle:
 
 ---
 
-## 🤝 Contributing
 
-Feel free to fork this repo and submit PRs for improvements in monitoring, scanning, or automation.
-
----
-
-## 📜 License
-
-MIT License
-
----
-
-**Built with ❤️ by \[Your Name]**

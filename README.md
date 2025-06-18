@@ -155,12 +155,30 @@ GitHub Actions will handle:
 
 ---
 
+
+
+Port Forward Loki, Prometheus and Grafana:
+
+
+
+kubectl port-forward --namespace monitoring svc/loki-gateway 3100:80
+
+kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
+
+kubectl port-forward svc/prometheus-kube-prometheus-prometheus -n monitoring 9090:9090
+
+
+
+
+
 ## 📊 6. Monitoring & Logging (Grafana)
 
 * **Prometheus**: Metrics from app and K8s
 * **Loki + Promtail**: Application & Falco logs
 * **Falco**: Runtime security alerts
 * **Grafana**: Dashboards (`dashboards/*.json`)
+
+
 
 ---
 
@@ -182,11 +200,14 @@ GitHub Actions will handle:
 
 ## 📷 Example Dashboards
 
-> 📌 Replace below with actual screenshot links in your repo later:
 
-* ![Falco Alerts Dashboard](images/falco-dashboard.png)
-* ![Upload Server Logs](images/secure-upload-server-dashboard.png)
-* ![GitHub Actions Success](images/github-actions-success.png)
+![image alt](https://github.com/Dpk808/DevSecOps_Falco_UploadServer/blob/main/screenshots/3a.%20Dashboard%20.png) 
+
+
+
+
+![image alt](https://github.com/Dpk808/DevSecOps_Falco_UploadServer/blob/main/screenshots/3b.%20Dashboard.png) 
+
 
 ---
 

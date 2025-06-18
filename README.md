@@ -4,7 +4,7 @@
 1. Creating a kind cluster
 
 
-2. Deploying monitroing Stack:
+2. Deploying monitoring Stack:
 A. Promtail:
 
 helm repo add grafana https://grafana.github.io/helm-charts
@@ -64,8 +64,6 @@ a. snyk auth
 b. 
 
 
-6. Helm Installing the manifests yaml files: prometheus, loki, grafana and falco:
+Make changes to the code and push it to the github
 
-a. Loki
-
-b. 
+The Workflow runs and shows success!

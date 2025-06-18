@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: secure-upload-server #Final push to Github
+  name: secure-upload-server #Final push towards Github
 spec:
   replicas: 1
   selector:
